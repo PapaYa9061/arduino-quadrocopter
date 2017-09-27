@@ -24,6 +24,6 @@ float gyrSen = 0;
 
 //komplementärfilter
 
-float accGewicht = 0;
+float accGewicht = 0;    //müssen zusammen 1 ergeben
 float gyrGewicht = 0;
 float magGewicht = 0;

@@ -6,6 +6,11 @@
 //global
 
 float dcmIMU[3][3] = { {1,0,0},{0,1,0},{0,0,1} };    //dcm[2] ist K (zeigt nach oben), 0 is I (norden)
+
+
+
+//NICHT GLOBAL
+
 unsigned int imu_update_intervall = 0;
 unsigned long imu_update_start = 0;
 
@@ -40,10 +45,10 @@ float gyrRead(unsigned char axis) {
 
 void imu_update() {
 	
-	float aidvector[3];    // hilfe zum berechnen der angular velocity von acc und mag
-	float gyrRate[3];       //gyrorate (wird later zum gesamtwertkorrekturwert)
-	float accKV[3];			// angular velocity accelerometer
-	float magKV[3];			//angular velocity magnetometer
+	static float aidvector[3];    // hilfe zum berechnen der angular velocity von acc und mag
+	static float gyrRate[3];       //gyrorate (wird later zum gesamtwertkorrekturwert)
+	static float accKV[3];			// angular dispalcement accelerometer
+	static float magKV[3];			//angular displacement magnetometer
 
 	aidvector[0] = magRead(0);										//korrekturvektorberechnung mag
 	aidvector[1] = magRead(1);										
@@ -61,14 +66,14 @@ void imu_update() {
 	gyrRate[1] = gyrRead(1);
 	gyrRate[2] = gyrRead(2);
 
-	imu_update_intervall = micros() - imu_update_start;                        //elapsed time fürs gyro
+	imu_update_intervall = micros() - imu_update_start;				//elapsed time fürs gyro
+	imu_update_start = micros();									//neuer countbeginn
 	for (int i = 0; i < 3; i++) {												//gesamtkorrektionsvektor per komplementärfilter
-		gyrRate[i] *= imu_update_intervall;										//gyrorate zu angular velocity
+		gyrRate[i] *= imu_update_intervall;										//gyrorate zu angular displacement
 		gyrRate[i] = accGewicht * accKV[i] + gyrGewicht * gyrRate[i] + magGewicht * magKV[i];
 
 	}
-	
-	dcm_rotate(dcmIMU, gyrRate);
-	imu_update_start = micros();
 
+	dcm_rotate(dcmIMU, gyrRate);
+	
 }
